@@ -1,0 +1,152 @@
+# iOS-Location-Spoofer-Web
+
+📱 基于 **Shadowrocket MITM** 方案的 iOS GPS 模拟定位 Web 管理面板。
+
+采用 Apple 2026 **Liquid Glass（液态玻璃）** 视觉美学设计，全屏地图选点，支持 100% 独立离线自建托管。
+
+---
+
+## 🌟 核心特性
+
+| | 特性 | 说明 |
+|---|---|---|
+| 🗺 | **多地图切换** | CartoDB / Esri 卫星 / 高德地图 / 高德卫星，支持国内外定位 |
+| 🎯 | **准星锁定** | 滑动地图对准目标，点击锁定后地图显示蓝色图钉标记已生效坐标 |
+| 📍 | **当前位置** | 一键回到当前物理位置并纠偏对齐 |
+| 🔒 | **完全自建托管** | 内置 `location-spoofer.js`，无需依赖 GitHub Raw 链接 |
+| ⭐ | **智能收藏夹** | 毛玻璃面板，保存常用地点；已收藏位置星标实心，点击实心星直接取消收藏；相同坐标自动去重 |
+| 🔢 | **高级参数** | 可调节海拔、水平精度、垂直精度（支持地形高度自动获取）|
+| 🔍 | **坐标直跳** | 搜索框直接粘贴经纬度（如 `39.9087, 116.3975`）即可跳转，无需调 API |
+| 🌙 | **深色模式** | 设置面板内一键切换深色/浅色，偏好自动记忆 |
+| 📲 | **PWA 支持** | Safari「添加到主屏幕」后全屏运行，体验接近原生 App |
+| 🐳 | **极简部署** | Cloudflare Pages 全局边缘节点 Serverless 部署，零服务器维护成本 |
+
+### 📸 界面预览
+
+<table align="center">
+  <tr>
+    <td align="center" width="33%">
+      <img src="./docs/screenshots/1-map-picker.jpg" alt="全屏地图选点" width="100%"><br>
+      <sub><b>全屏地图选点</b></sub>
+    </td>
+    <td align="center" width="33%">
+      <img src="./docs/screenshots/2-favorites.jpg" alt="智能收藏夹" width="100%"><br>
+      <sub><b>智能收藏夹</b></sub>
+    </td>
+    <td align="center" width="33%">
+      <img src="./docs/screenshots/3-shadowrocket-config.jpg" alt="设置与小火箭配置" width="100%"><br>
+      <sub><b>设置与小火箭配置</b></sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="33%">
+      <img src="./docs/screenshots/4-map-layers.jpg" alt="多图层图源切换" width="100%"><br>
+      <sub><b>多图层图源切换</b></sub>
+    </td>
+    <td align="center" width="33%">
+      <img src="./docs/screenshots/5-advanced-params.jpg" alt="卫星图与高级参数" width="100%"><br>
+      <sub><b>卫星图与高级参数</b></sub>
+    </td>
+    <td align="center" width="33%">
+      <img src="./docs/screenshots/6-search-history.jpg" alt="地点搜索与历史" width="100%"><br>
+      <sub><b>地点搜索与历史</b></sub>
+    </td>
+  </tr>
+</table>
+
+---
+
+## 🛠 快速部署 (Cloudflare Pages)
+
+本项目已重构为原生支持 **Cloudflare Pages** 部署，实现 **全球加速、零维护、完全免费**。
+
+### 1. 准备工作
+- 注册并登录 [Cloudflare](https://dash.cloudflare.com/) 账号。
+- 在 Cloudflare Dashboard 左侧菜单找到 **Workers & Pages** -> **KV**。
+- 创建一个新的 KV 命名空间，命名为 `SPOOFER_DATA`。
+
+### 2. Fork 仓库
+点击右上角的 Fork，将本仓库 Fork 到您的 GitHub 账号下。
+
+### 3. 创建 Pages 项目
+1. 在 Cloudflare Dashboard 侧边栏进入 **Workers & Pages** -> **Overview**，点击右上角 **Create application** (创建应用程序)。
+2. ⚠️ **关键：请务必点击顶部的「Pages (网页)」标签卡**（切勿停留在默认的 Workers 标签卡上），然后点击 **Connect to Git** (连接到 Git)。
+3. 授权连接您的 GitHub，选择您刚才 Fork 的仓库。
+4. 在构建设置 (Build settings) 页面：
+   - **Framework preset** (框架预设): 选择 `None`
+   - **Build command** (构建命令): 填写 `exit 0`
+   - **Build output directory** (构建输出目录): 填写 `public`
+5. 展开 **Environment variables (advanced)** (环境变量)，添加以下变量：
+   - `TOKEN`: 您的安全密码（必填，用于网页访问与 Shadowrocket 提取坐标）
+   - `AMAP_KEY`: 您的高德地图 Web 服务 Key（用于高精度国内地名搜索，可选但强烈推荐）
+6. 点击 **Save and Deploy**（保存并部署）。首次部署由于尚未绑定 KV 会提示无法保存数据，这是正常的，请继续下一步。
+
+### 4. 绑定 KV 命名空间
+1. 部署完成后，进入该 Pages 项目的详情页，点击顶部的 **Settings** -> **Functions**。
+2. 往下滚动找到 **KV namespace bindings**。
+3. 点击 **Add binding**：
+   - **Variable name (变量名称)**: 填入 `SPOOFER_DATA` （必须完全一致）
+   - **KV namespace (KV 命名空间)**: 选择您在第一步创建的 `SPOOFER_DATA`。
+4. 重新部署一次生效：回到该项目的 **Deployments (部署)** 页面，点击列表最上面一次部署右侧的 `...` 图标 -> **Retry deployment (重试部署)**。
+
+部署完成后，您将获得一个类似 `https://your-project.pages.dev` 的免费域名，可以直接通过该域名访问管理面板！
+
+---
+
+## 📲 Shadowrocket 配置指南
+
+### 1. 添加为模块 (Module)
+
+1. 在手机浏览器打开面板，输入您的 Token 登录：
+   手机浏览器访问面板地址
+2. 点击页面右上角 **「⚙️ 设置」** 图标，复制**模块链接**
+3. 打开 Shadowrocket → 底部 **「配置」** 标签页 → 点击进入 **「模块 (Modules)」**
+4. 点击右上角 **「+」** → 粘贴刚才复制的链接 → 点击**下载**
+5. 确保下载好的 `iOS Location Spoofer` 模块开关处于**开启**状态
+
+### 2. 开启 HTTPS 解密与安装证书
+
+点击当前配置文件进入详情 → **「HTTPS 解密」**：
+
+1. 开启 **「HTTPS 解密」** 开关
+2. 开启 **「通过 HTTP/2 进行中间人攻击 (MitM)」** 开关
+3. 点击 **「证书」** → **「生成新的 CA 证书」** → **「安装证书」**
+4. 前往 iPhone **「设置 → 通用 → 关于本机 → 证书信任设置」**，找到 Shadowrocket 证书并**完全信任**
+
+### 3. 启动 VPN
+
+回到小火箭首页，开启 VPN 开关，模式保持 **「配置 (Config)」** 即可。
+
+---
+
+## 🧭 日常使用流程
+
+1. **打开面板**：手机浏览器访问面板地址，输入 Token 登录（登录后 30 天内免密直接进入）
+2. **选点**：拖动地图准星，或顶部搜索框输入地名 / 直接粘贴经纬度（如 `39.9087, 116.3975`）
+3. **锁定**：点击 **「锁定」** 按钮，地图上出现蓝色图钉，提示"位置已锁定"
+4. **刷新定位**：前往 iPhone **「设置 → 隐私与安全 → 定位服务」**，关闭后等 10 秒再重新开启
+5. **验证**：打开高德地图、微信或系统地图，此时模拟定位已顺利生效 ✅
+
+> **换位置**：重复步骤 2-4 即可，无需重启小火箭。
+> **收藏常用地点**：锁定位置后点击准星旁的 ⭐ 星标即可收藏，再次点击实心星可取消收藏。
+> **夜间使用**：点击设置面板底部的「深色模式」开关，偏好自动记忆。
+> **添加到主屏幕 (PWA)**：在 Safari 中点击「分享」→「添加到主屏幕」，即可像 App 一样全屏使用。
+
+---
+
+## ⚖️ 声明与鸣谢
+
+1. **出处与致敬**：本项目中的 iOS 核心数据拦截劫持机制和数据拆封包逻辑全部基于 **[mekos2772/ios-location-spoofer](https://github.com/mekos2772/ios-location-spoofer)** 的核心脚本 `location-spoofer.js`，在此对原作者的开源精神表示衷心感谢！
+2. **免责声明**：本项目仅供开发者用于地图开发测试、地理位置接口调试以及技术性学习研究，请勿用于非法用途。因违规使用产生的一切风险与后果由使用者自行承担。
+
+---
+
+## 📄 开源授权
+
+MIT License
+
+---
+
+## 🔗 友情链接
+
+- [LINUX DO - 新的理想型社区](https://linux.do/)
